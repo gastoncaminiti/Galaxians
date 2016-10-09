@@ -3,23 +3,45 @@
 #include <windows.h>
 #include <conio2.h>
 
-
-
 #define DER 77
 #define IZQ 75
 
 using namespace std;
 
-class nave{
+//CLASE BALA
+class bala{
+	int x,y;
+public:
+	void setX(int _x){x=_x;};
+	void setY(int _y){y=_y;};
+	int getX(){return x;};
+	int getY(){return y;};
+	void mover();
+};
+
+void bala::mover(){
+	gotoxy(x,y);
+	printf(" ");
+	if(y>4)y--;
+	gotoxy(x,y);
+	printf("*");
+}
+
+//CLASE NAVE BASE
+class nave: public bala{
 	int  x,y;
 	int img[4][5];
 	int vida;
 public:
+	bala b;
 	nave(int _x, int _y, int _vida):x(_x),y(_y),vida(_vida){};
+	int getX(){return x;};
+	int getY(){return y;};
 	void pintar();
 	void borrar();
 	void mover(char t);
 	void pintar_vida();
+	void disparar();
 };
 
 void nave::pintar(){
@@ -68,6 +90,14 @@ void nave::pintar_vida(){
 	}
 }
 
+
+void nave::disparar(){
+	b.setX(x+2);
+	b.setY(y-1);
+}
+
+
+
 void pintar_limites(){
 	for(int i=2;i<78;i++){
 		gotoxy(i,3); printf("%c",205);
@@ -85,8 +115,6 @@ void pintar_limites(){
 	gotoxy(77,33); printf("%c",188);
 }
 
-
-
 int main(int argc, char *argv[]) {
 	pintar_limites();
 	nave n1(38,28,3);
@@ -96,10 +124,16 @@ int main(int argc, char *argv[]) {
 		_setcursortype( _NOCURSOR );
 		if(kbhit())
 		{ 	
+			char t = getch();
 			n1.borrar();
-			n1.mover(getch());
+			n1.mover(t);
+			if(t == 'a')
+			   n1.disparar();
+			n1.b.mover();
 		}
+		
 		Sleep(30);
+		
 	}
 	return 0;
 }
