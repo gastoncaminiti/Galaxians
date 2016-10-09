@@ -17,6 +17,8 @@ public:
 	int getX(){return x;};
 	int getY(){return y;};
 	void mover();
+	bool limite();
+	void eliminar();
 };
 
 void bala::mover(){
@@ -27,11 +29,23 @@ void bala::mover(){
 	printf("*");
 }
 
+bool bala::limite(){
+	if(y==4)
+	   return true;
+	return false;
+}
+
+void bala::eliminar(){
+	gotoxy(x,y);
+	printf(" ");
+}
+
 //CLASE NAVE BASE
 class nave: public bala{
 	int  x,y;
 	int img[4][5];
 	int vida;
+	bala *disparo = NULL;
 public:
 	bala b;
 	nave(int _x, int _y, int _vida):x(_x),y(_y),vida(_vida){};
@@ -42,6 +56,7 @@ public:
 	void mover(char t);
 	void pintar_vida();
 	void disparar();
+	void mover_disparo();
 };
 
 void nave::pintar(){
@@ -92,11 +107,20 @@ void nave::pintar_vida(){
 
 
 void nave::disparar(){
-	b.setX(x+2);
-	b.setY(y-1);
+	disparo = new bala();
+	disparo->setX(x+2);
+	disparo->setY(y-1);
 }
 
-
+void nave::mover_disparo(){
+	if(disparo){
+		if(disparo->limite()){
+			disparo->eliminar();
+		}else{
+			disparo->mover();
+		}
+	}
+}
 
 void pintar_limites(){
 	for(int i=2;i<78;i++){
@@ -129,9 +153,9 @@ int main(int argc, char *argv[]) {
 			n1.mover(t);
 			if(t == 'a')
 			   n1.disparar();
-			n1.b.mover();
+			
 		}
-		
+		n1.mover_disparo();
 		Sleep(30);
 		
 	}
