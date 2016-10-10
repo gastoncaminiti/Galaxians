@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <windows.h>
 #include <conio2.h>
+#include <vector>
 
 #define DER 77
 #define IZQ 75
@@ -253,22 +254,54 @@ void enemigo_general::pintar(){
 int main(int argc, char *argv[]) {
 	pintar_limites();
 	nave *n1 = new nave();
-	n1->setX(38);n1->setY(28);n1->setVida(3);
+	n1->setX(38);n1->setY(30);n1->setVida(3);
 	n1->pintar();
 	n1->pintar_vida();
-	//enemigo
-	enemigo_infanteria *n2 = new enemigo_infanteria();
+	/*/enemigo
+	enemigo *n2 = new enemigo_infanteria();
 	n2->setX(38);n2->setY(20);n2->setVida(1);n2->setDir(IZQ);
 	n2->pintar();
-	enemigo_sargento *n3 = new enemigo_sargento();
+	enemigo *n3 = new enemigo_sargento();
 	n3->setX(38);n3->setY(16);n3->setVida(1);n3->setDir(IZQ);
 	n3->pintar();
-	enemigo_teniente *n4 = new enemigo_teniente();
+	enemigo *n4 = new enemigo_teniente();
 	n4->setX(38);n4->setY(12);n4->setVida(1);n4->setDir(IZQ);
 	n4->pintar();
-	enemigo_general *n5 = new enemigo_general();
+	enemigo *n5 = new enemigo_general();
 	n5->setX(38);n5->setY(8);n5->setVida(1);n5->setDir(IZQ);
-	n5->pintar();
+	n5->pintar();*/
+	vector<enemigo*> formacion;
+	for(int i=30;i!=0;i--){
+		formacion.push_back(new enemigo_infanteria());
+	}
+	for(int i=10;i!=0;i--){
+		formacion.push_back(new enemigo_sargento());
+	}
+	for(int i=8;i!=0;i--){
+		formacion.push_back(new enemigo_teniente());
+	}
+	for(int i=2;i!=0;i--){
+		formacion.push_back(new enemigo_general());
+	}
+	for(int i = 0; i < 50; i++){
+		if(i<30){
+			if(i<10){			
+				formacion[i]->setX(6+(4*i));formacion[i]->setY(20);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);
+			}else if(i<20){
+				formacion[i]->setX(6+(4*i)-40);formacion[i]->setY(18);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);
+			}else{
+				formacion[i]->setX(6+(4*i)-80);formacion[i]->setY(16);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);
+			}
+		}else if(i<40){
+			formacion[i]->setX(6+(4*i)-120);formacion[i]->setY(14);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);	
+		}else if(i<48){
+			formacion[i]->setX(10+(4*i)-160);formacion[i]->setY(12);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);	
+		}else{
+			formacion[i]->setX(10+(4*i)-180);formacion[i]->setY(10);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);	
+		}
+		formacion[i]->pintar();
+	}
+	
 	while(true){
 		_setcursortype( _NOCURSOR );
 		if(kbhit())
@@ -281,6 +314,7 @@ int main(int argc, char *argv[]) {
 			
 		}
 		n1->mover_disparo();
+		/*
 		n2->borrar();
 		n2->mover();
 		n3->borrar();
@@ -288,8 +322,12 @@ int main(int argc, char *argv[]) {
 		n4->borrar();
 		n4->mover();
 		n5->borrar();
-		n5->mover();
-		Sleep(70);
+		n5->mover();*/
+		for(int i = 0; i < 50; i++){
+			formacion[i]->borrar();
+			formacion[i]->mover();
+		}
+		Sleep(85);
 		
 	}
 	return 0;
