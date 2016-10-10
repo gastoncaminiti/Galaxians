@@ -45,7 +45,7 @@ class nave: public bala{
 	
 protected:
 	int  x,y;
-	int img[4][5];
+	int *img;
 	int vida;
 	bala *disparo = NULL;
 public:
@@ -56,21 +56,20 @@ public:
 	void setY(int _y){y=_y;};
 	void setVida(int _vida){vida=_vida;};
 	void virtual pintar();
+	void virtual mover(char t);
 	void borrar();
-	void mover(char t);
 	void pintar_vida();
 	void disparar();
 	void mover_disparo();
 };
 
 void nave::pintar(){
-	img[0][0]=0;img[0][1]=0;img[0][2]=219;img[0][3]=0;img[0][4]=0;
-	img[1][0]=0;img[1][1]=178;img[1][2]=207;img[1][3]=178;img[1][4]=0;
-	img[2][0]=0;img[2][1]=219;img[2][2]=167;img[2][3]=219;img[2][4]=0;
-	img[3][0]=219;img[3][1]=177;img[3][2]=0;img[3][3]=177;img[3][4]=219;
+	int img[2][5];
+	img[0][0]=0;img[0][1]=194;img[0][2]=207;img[0][3]=194;img[0][4]=0;
+	img[1][0]=207;img[1][1]=178;img[1][2]=184;img[1][3]=178;img[1][4]=207;
 	textcolor(6);
 	for(int i=0;i<5;i++){
-		for(int j=0;j<4;j++){
+		for(int j=0;j<2;j++){
 			gotoxy(x+i,y+j);
 			printf("%c",img[j][i]);
 		}
@@ -80,7 +79,7 @@ void nave::pintar(){
 
 void nave::borrar(){
 	for(int i=0;i<5;i++){
-		for(int j=0;j<4;j++){
+		for(int j=0;j<2;j++){
 			gotoxy(x+i,y+j);
 			printf(" ");
 		}
@@ -146,22 +145,44 @@ void pintar_limites(){
 	gotoxy(77,33); printf("%c",188);
 }
 
-//CLASE NAVE ENEMIGO
-class enemigo_infanteria: virtual public nave{
-	
+//CLASE NAVE ENEMIGA BASE
+class enemigo: virtual public nave{
+	int dir;
+	int puntaje;
+public:
+	void setDir(int _dir){dir=_dir;};
+	void setPuntaje(int _puntaje){puntaje=_puntaje;};
+	void mover();	
+};
+
+void enemigo::mover(){
+	switch(dir)
+	{
+	case IZQ:
+		if(x>3)x--;
+		if(x==3)dir=DER;
+		break;
+	case DER:
+		if(x+6<77)x++;
+		if(x+6==77)dir=IZQ;
+		break;
+	}
+	pintar();
+}
+
+//ENEMIGO 1
+class enemigo_infanteria: virtual public enemigo{
 public:
 	void pintar();
-	void mover_enemigo();	
 };
 
 void enemigo_infanteria::pintar(){
-	img[0][0]=0;img[0][1]=0;img[0][2]=219;img[0][3]=0;img[0][4]=0;
-	img[1][0]=0;img[1][1]=178;img[1][2]=207;img[1][3]=178;img[1][4]=0;
-	img[2][0]=0;img[2][1]=219;img[2][2]=167;img[2][3]=219;img[2][4]=0;
-	img[3][0]=219;img[3][1]=177;img[3][2]=0;img[3][3]=177;img[3][4]=219;
+	int img[2][5];
+	img[0][0]=0;img[0][1]=178;img[0][2]=207;img[0][3]=178;img[0][4]=0;
+	img[1][0]=0;img[1][1]=0;img[1][2]=0;img[1][3]=0;img[1][4]=0;
 	textcolor(4);
 	for(int i=0;i<5;i++){
-		for(int j=0;j<4;j++){
+		for(int j=0;j<2;j++){
 			gotoxy(x+i,y+j);
 			printf("%c",img[j][i]);
 		}
@@ -169,8 +190,64 @@ void enemigo_infanteria::pintar(){
 	}
 }
 
-void enemigo_infanteria::mover_enemigo(){
-	
+//ENEMIGO 2
+class enemigo_sargento: virtual public enemigo{
+public:
+	void pintar();
+};
+
+void enemigo_sargento::pintar(){
+	int img[2][5];
+	img[0][0]=0;img[0][1]=178;img[0][2]=207;img[0][3]=178;img[0][4]=0;
+	img[1][0]=0;img[1][1]=0;img[1][2]=193;img[1][3]=0;img[1][4]=0;
+	textcolor(3);
+	for(int i=0;i<5;i++){
+		for(int j=0;j<2;j++){
+			gotoxy(x+i,y+j);
+			printf("%c",img[j][i]);
+		}
+		
+	}
+}
+
+//ENEMIGO 3
+class enemigo_teniente: virtual public enemigo{
+public:
+	void pintar();
+};
+
+void enemigo_teniente::pintar(){
+	int img[2][5];
+	img[0][0]=196;img[0][1]=178;img[0][2]=207;img[0][3]=178;img[0][4]=196;
+	img[1][0]=0;img[1][1]=193;img[1][2]=0;img[1][3]=193;img[1][4]=0;
+	textcolor(14);
+	for(int i=0;i<5;i++){
+		for(int j=0;j<2;j++){
+			gotoxy(x+i,y+j);
+			printf("%c",img[j][i]);
+		}
+		
+	}
+}
+
+//ENEMIGO 4
+class enemigo_general: virtual public enemigo{
+public:
+	void pintar();
+};
+
+void enemigo_general::pintar(){
+	int img[2][5];
+	img[0][0]=196;img[0][1]=178;img[0][2]=207;img[0][3]=178;img[0][4]=196;
+	img[1][0]=207;img[1][1]=193;img[1][2]=207;img[1][3]=193;img[1][4]=207;
+	textcolor(2);
+	for(int i=0;i<5;i++){
+		for(int j=0;j<2;j++){
+			gotoxy(x+i,y+j);
+			printf("%c",img[j][i]);
+		}
+		
+	}
 }
 
 int main(int argc, char *argv[]) {
@@ -180,9 +257,18 @@ int main(int argc, char *argv[]) {
 	n1->pintar();
 	n1->pintar_vida();
 	//enemigo
-	nave *n2 = new enemigo_infanteria();
-	n2->setX(12);n2->setY(25);n2->setVida(1);
+	enemigo_infanteria *n2 = new enemigo_infanteria();
+	n2->setX(38);n2->setY(20);n2->setVida(1);n2->setDir(IZQ);
 	n2->pintar();
+	enemigo_sargento *n3 = new enemigo_sargento();
+	n3->setX(38);n3->setY(16);n3->setVida(1);n3->setDir(IZQ);
+	n3->pintar();
+	enemigo_teniente *n4 = new enemigo_teniente();
+	n4->setX(38);n4->setY(12);n4->setVida(1);n4->setDir(IZQ);
+	n4->pintar();
+	enemigo_general *n5 = new enemigo_general();
+	n5->setX(38);n5->setY(8);n5->setVida(1);n5->setDir(IZQ);
+	n5->pintar();
 	while(true){
 		_setcursortype( _NOCURSOR );
 		if(kbhit())
@@ -195,7 +281,15 @@ int main(int argc, char *argv[]) {
 			
 		}
 		n1->mover_disparo();
-		Sleep(30);
+		n2->borrar();
+		n2->mover();
+		n3->borrar();
+		n3->mover();
+		n4->borrar();
+		n4->mover();
+		n5->borrar();
+		n5->mover();
+		Sleep(70);
 		
 	}
 	return 0;
