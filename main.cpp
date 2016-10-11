@@ -150,8 +150,10 @@ void pintar_limites(){
 class enemigo: virtual public nave{
 	int dir;
 	int puntaje;
+	int posicion;
 public:
 	void setDir(int _dir){dir=_dir;};
+	void setPosicion(int _posicion){posicion=_posicion;};
 	void setPuntaje(int _puntaje){puntaje=_puntaje;};
 	void mover();	
 };
@@ -160,12 +162,12 @@ void enemigo::mover(){
 	switch(dir)
 	{
 	case IZQ:
-		if(x>3)x--;
-		if(x==3)dir=DER;
+		if(x-(posicion*5)>4)x--;
+		if(x-(posicion*5)==4)dir=DER;
 		break;
 	case DER:
-		if(x+6<77)x++;
-		if(x+6==77)dir=IZQ;
+		if(x+(5*(10-posicion))<76)x++;
+		if(x+(5*(10-posicion))==76)dir=IZQ;
 		break;
 	}
 	pintar();
@@ -286,20 +288,20 @@ int main(int argc, char *argv[]) {
 	for(int i = 0; i < 50; i++){
 		if(i<30){
 			if(i<10){			
-				formacion[i]->setX(6+(4*i));formacion[i]->setY(20);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);
+				formacion[i]->setX(15+(5*i));formacion[i]->setY(20);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i);
 			}else if(i<20){
-				formacion[i]->setX(6+(4*i)-40);formacion[i]->setY(18);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);
+				formacion[i]->setX(15+(5*i)-50);formacion[i]->setY(18);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i-10);
 			}else{
-				formacion[i]->setX(6+(4*i)-80);formacion[i]->setY(16);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);
+				formacion[i]->setX(15+(5*i)-100);formacion[i]->setY(16);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i-20);
 			}
 		}else if(i<40){
-			formacion[i]->setX(6+(4*i)-120);formacion[i]->setY(14);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);	
+			formacion[i]->setX(15+(5*i)-150);formacion[i]->setY(14);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i-30);	
 		}else if(i<48){
-			formacion[i]->setX(10+(4*i)-160);formacion[i]->setY(12);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);	
+			formacion[i]->setX(19+(5*i)-199);formacion[i]->setY(12);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i+1-40);	
 		}else{
-			formacion[i]->setX(10+(4*i)-180);formacion[i]->setY(10);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);	
+			formacion[i]->setX(15+(5*i)-220);formacion[i]->setY(10);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i+2-46);	
 		}
-		formacion[i]->pintar();
+		
 	}
 	
 	while(true){
