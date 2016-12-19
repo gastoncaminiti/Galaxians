@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <conio2.h>
 #include <vector>
+#include <time.h>
 
 #define DER 77
 #define IZQ 75
@@ -249,9 +250,12 @@ void enemigo_general::pintar(){
 			gotoxy(x+i,y+j);
 			printf("%c",img[j][i]);
 		}
-		
 	}
 }
+
+// Tiempo Global
+int periodoRefresco = 300; // a menor valor, mas rapidez de refresco
+int ultimoRefresco = clock(); // guardamos el tiempo actual
 
 int main(int argc, char *argv[]) {
 	pintar_limites();
@@ -259,19 +263,6 @@ int main(int argc, char *argv[]) {
 	n1->setX(38);n1->setY(30);n1->setVida(3);
 	n1->pintar();
 	n1->pintar_vida();
-	/*/enemigo
-	enemigo *n2 = new enemigo_infanteria();
-	n2->setX(38);n2->setY(20);n2->setVida(1);n2->setDir(IZQ);
-	n2->pintar();
-	enemigo *n3 = new enemigo_sargento();
-	n3->setX(38);n3->setY(16);n3->setVida(1);n3->setDir(IZQ);
-	n3->pintar();
-	enemigo *n4 = new enemigo_teniente();
-	n4->setX(38);n4->setY(12);n4->setVida(1);n4->setDir(IZQ);
-	n4->pintar();
-	enemigo *n5 = new enemigo_general();
-	n5->setX(38);n5->setY(8);n5->setVida(1);n5->setDir(IZQ);
-	n5->pintar();*/
 	vector<enemigo*> formacion;
 	for(int i=30;i!=0;i--){
 		formacion.push_back(new enemigo_infanteria());
@@ -303,7 +294,7 @@ int main(int argc, char *argv[]) {
 		}
 		
 	}
-	
+
 	while(true){
 		_setcursortype( _NOCURSOR );
 		if(kbhit())
@@ -315,21 +306,16 @@ int main(int argc, char *argv[]) {
 			   n1->disparar();
 			
 		}
-		n1->mover_disparo();
-		/*
-		n2->borrar();
-		n2->mover();
-		n3->borrar();
-		n3->mover();
-		n4->borrar();
-		n4->mover();
-		n5->borrar();
-		n5->mover();*/
-		for(int i = 0; i < 50; i++){
-			formacion[i]->borrar();
-			formacion[i]->mover();
+		
+		if(clock() > ultimoRefresco + periodoRefresco)
+		{
+			n1->mover_disparo();
+			for(int i = 0; i < 50; i++){
+				formacion[i]->borrar();
+				formacion[i]->mover();
+			}
+			ultimoRefresco = clock();
 		}
-		Sleep(85);
 		
 	}
 	return 0;
