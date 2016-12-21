@@ -10,6 +10,15 @@
 
 using namespace std;
 
+void ShowConsoleCursor(bool showFlag)
+{
+	HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_CURSOR_INFO     cursorInfo;
+	GetConsoleCursorInfo(out, &cursorInfo);
+	cursorInfo.bVisible = showFlag; // set the cursor visibility
+	SetConsoleCursorInfo(out, &cursorInfo);
+}
+
 //CLASE BALA
 class bala{
 	int x,y;
@@ -47,17 +56,19 @@ class nave: public bala{
 	
 protected:
 	int  x,y;
-	int *img;
 	int vida;
 	bala *disparo = NULL;
+	int color;
+	int img[2][5];
 public:
 	bala b;
+	nave();
 	int getX(){return x;};
 	int getY(){return y;};
 	void setX(int _x){x=_x;};
 	void setY(int _y){y=_y;};
 	void setVida(int _vida){vida=_vida;};
-	void virtual pintar();
+	void pintar();
 	void virtual mover(char t);
 	void borrar();
 	void pintar_vida();
@@ -65,11 +76,14 @@ public:
 	void mover_disparo();
 };
 
-void nave::pintar(){
-	int img[2][5];
+
+nave::nave(){
 	img[0][0]=0;img[0][1]=194;img[0][2]=207;img[0][3]=194;img[0][4]=0;
 	img[1][0]=207;img[1][1]=178;img[1][2]=184;img[1][3]=178;img[1][4]=207;
-	textcolor(6);
+	color=6;
+}
+void nave::pintar(){
+	textcolor(color);
 	for(int i=0;i<5;i++){
 		for(int j=0;j<2;j++){
 			gotoxy(x+i,y+j);
@@ -177,106 +191,121 @@ void enemigo::mover(){
 //ENEMIGO 1
 class enemigo_infanteria: virtual public enemigo{
 public:
-	void pintar();
+	enemigo_infanteria();
 };
 
-void enemigo_infanteria::pintar(){
-	int img[2][5];
+enemigo_infanteria::enemigo_infanteria(){
 	img[0][0]=0;img[0][1]=178;img[0][2]=207;img[0][3]=178;img[0][4]=0;
 	img[1][0]=0;img[1][1]=0;img[1][2]=0;img[1][3]=0;img[1][4]=0;
-	textcolor(4);
-	for(int i=0;i<5;i++){
-		for(int j=0;j<2;j++){
-			gotoxy(x+i,y+j);
-			printf("%c",img[j][i]);
-		}
-		
-	}
+	color=4;
 }
 
 //ENEMIGO 2
 class enemigo_sargento: virtual public enemigo{
 public:
-	void pintar();
+	enemigo_sargento();
 };
 
-void enemigo_sargento::pintar(){
-	int img[2][5];
+enemigo_sargento::enemigo_sargento(){
 	img[0][0]=0;img[0][1]=178;img[0][2]=207;img[0][3]=178;img[0][4]=0;
 	img[1][0]=0;img[1][1]=0;img[1][2]=193;img[1][3]=0;img[1][4]=0;
-	textcolor(3);
-	for(int i=0;i<5;i++){
-		for(int j=0;j<2;j++){
-			gotoxy(x+i,y+j);
-			printf("%c",img[j][i]);
-		}
-		
-	}
+	color=3;
 }
 
 //ENEMIGO 3
 class enemigo_teniente: virtual public enemigo{
 public:
-	void pintar();
+	enemigo_teniente();
 };
 
-void enemigo_teniente::pintar(){
-	int img[2][5];
+enemigo_teniente::enemigo_teniente(){
 	img[0][0]=196;img[0][1]=178;img[0][2]=207;img[0][3]=178;img[0][4]=196;
 	img[1][0]=0;img[1][1]=193;img[1][2]=0;img[1][3]=193;img[1][4]=0;
-	textcolor(14);
-	for(int i=0;i<5;i++){
-		for(int j=0;j<2;j++){
-			gotoxy(x+i,y+j);
-			printf("%c",img[j][i]);
-		}
-		
-	}
+	color=14;
 }
 
 //ENEMIGO 4
 class enemigo_general: virtual public enemigo{
 public:
-	void pintar();
+	enemigo_general();
 };
 
-void enemigo_general::pintar(){
-	int img[2][5];
+enemigo_general::enemigo_general(){
 	img[0][0]=196;img[0][1]=178;img[0][2]=207;img[0][3]=178;img[0][4]=196;
 	img[1][0]=207;img[1][1]=193;img[1][2]=207;img[1][3]=193;img[1][4]=207;
-	textcolor(2);
-	for(int i=0;i<5;i++){
-		for(int j=0;j<2;j++){
-			gotoxy(x+i,y+j);
-			printf("%c",img[j][i]);
-		}
-	}
+	color=2;
 }
 
 // Tiempo Global
-int periodoRefresco = 300; // a menor valor, mas rapidez de refresco
+int periodoRefresco = 120; // a menor valor, mas rapidez de refresco
 int ultimoRefresco = clock(); // guardamos el tiempo actual
 
-int main(int argc, char *argv[]) {
-	pintar_limites();
-	nave *n1 = new nave();
-	n1->setX(38);n1->setY(30);n1->setVida(3);
-	n1->pintar();
-	n1->pintar_vida();
-	vector<enemigo*> formacion;
-	for(int i=30;i!=0;i--){
-		formacion.push_back(new enemigo_infanteria());
+//FORMACION
+
+class oleada: public enemigo_sargento,public enemigo_infanteria, public enemigo_teniente, public enemigo_general{
+	vector <enemigo*> formacion;
+	int map[10][6];
+	void cargar_enemigo(int tipo);
+public:
+	oleada(int config_f1[2],int config_f2[2], int config_f3[2], int config_f4[2], int config_f5[2], int config_f6[2]);
+	void posicionar_oleada();
+	void dibujar_oleada();
+};
+
+oleada::oleada(int config_f1[2],int config_f2[2], int config_f3[2], int config_f4[2], int config_f5[2], int config_f6[2]){
+	for(int i=config_f1[0];i!=0;i--){
+		map[i][1]=config_f1[1];
+		cargar_enemigo(config_f1[1]);
 	}
-	for(int i=10;i!=0;i--){
+	
+	for(int i=config_f2[0];i!=0;i--){
+		map[i][2]=config_f2[1];
+		cargar_enemigo(config_f2[1]);
+	}
+	
+	for(int i=config_f3[0];i!=0;i--){
+		map[i][3]=config_f3[1];
+		cargar_enemigo(config_f3[1]);
+	}
+	
+	for(int i=config_f4[0];i!=0;i--){
+		map[i][4]=config_f4[1];
+		cargar_enemigo(config_f4[1]);
+	}
+	
+	
+	for(int i=config_f5[0];i!=0;i--){
+		map[i][5]=config_f5[1];
+		cargar_enemigo(config_f5[1]);
+	}
+
+	for(int i=config_f6[0];i!=0;i--){
+		map[i][6]=config_f6[1];
+		cargar_enemigo(config_f6[1]);
+	}
+	
+}
+
+void oleada::cargar_enemigo(int tipo){
+	switch(tipo)  
+	{  
+	case 2:  
 		formacion.push_back(new enemigo_sargento());
-	}
-	for(int i=8;i!=0;i--){
+		break;  
+	case 3:  
 		formacion.push_back(new enemigo_teniente());
-	}
-	for(int i=2;i!=0;i--){
+		break;  
+	case 4:  
 		formacion.push_back(new enemigo_general());
-	}
-	for(int i = 0; i < 50; i++){
+		break;  
+	default:  
+		formacion.push_back(new enemigo_infanteria());
+	}  
+}
+
+void oleada::posicionar_oleada(){
+
+	for(int i = 0; i < 44; i++){
 		if(i<30){
 			if(i<10){			
 				formacion[i]->setX(15+(5*i));formacion[i]->setY(20);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i);
@@ -285,18 +314,44 @@ int main(int argc, char *argv[]) {
 			}else{
 				formacion[i]->setX(15+(5*i)-100);formacion[i]->setY(16);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i-20);
 			}
-		}else if(i<40){
-			formacion[i]->setX(15+(5*i)-150);formacion[i]->setY(14);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i-30);	
-		}else if(i<48){
-			formacion[i]->setX(19+(5*i)-199);formacion[i]->setY(12);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i+1-40);	
+		}else if(i<38){
+			formacion[i]->setX(15+(5*i)-150);formacion[i]->setY(14);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i-30);
+			//cout<<formacion[i]->getX()<<endl;
+		}else if(i<42){
+			formacion[i]->setX(15+(5*i)-199);formacion[i]->setY(12);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i+1-40);	
 		}else{
 			formacion[i]->setX(15+(5*i)-220);formacion[i]->setY(10);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i+2-46);	
 		}
-		
 	}
+}
 
+void oleada::dibujar_oleada(){
+	for(int i = 0; i < 44; i++){
+		formacion[i]->borrar();
+		formacion[i]->mover();
+	}
+}
+int main(int argc, char *argv[]) {
+	pintar_limites();
+	nave *n1 = new nave();
+	//Difinición de NIVEL
+	int fila_1[2] = {10,1}; 
+	int fila_2[2] = {10,1};
+	int fila_3[2] = {10,1};
+	int fila_4[2] = {8,2};
+	int fila_5[2] = {6,3};
+	int fila_6[2] = {2,4};
+	
+	//Difinición de NIVEL
+	oleada *nivel1 = new oleada(fila_1,fila_2,fila_3,fila_4,fila_5,fila_6);
+	n1->setX(38);n1->setY(30);n1->setVida(3);
+	n1->pintar();
+	n1->pintar_vida();
+	
+	nivel1->posicionar_oleada();
+	
 	while(true){
-		_setcursortype( _NOCURSOR );
+		ShowConsoleCursor(false);
 		if(kbhit())
 		{ 	
 			char t = getch();
@@ -310,10 +365,7 @@ int main(int argc, char *argv[]) {
 		if(clock() > ultimoRefresco + periodoRefresco)
 		{
 			n1->mover_disparo();
-			for(int i = 0; i < 50; i++){
-				formacion[i]->borrar();
-				formacion[i]->mover();
-			}
+			nivel1->dibujar_oleada();
 			ultimoRefresco = clock();
 		}
 		
