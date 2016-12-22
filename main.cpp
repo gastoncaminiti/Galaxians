@@ -304,8 +304,9 @@ void oleada::cargar_enemigo(int tipo){
 }
 
 void oleada::posicionar_oleada(){
-
-	for(int i = 0; i < 44; i++){
+	
+	int t = formacion.size();
+	for(int i = 0; i < t ; i++){
 		if(i<30){
 			if(i<10){			
 				formacion[i]->setX(15+(5*i));formacion[i]->setY(20);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i);
@@ -316,9 +317,8 @@ void oleada::posicionar_oleada(){
 			}
 		}else if(i<38){
 			formacion[i]->setX(15+(5*i)-150);formacion[i]->setY(14);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i-30);
-			//cout<<formacion[i]->getX()<<endl;
-		}else if(i<42){
-			formacion[i]->setX(15+(5*i)-199);formacion[i]->setY(12);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i+1-40);	
+		}else if(i<44){
+			formacion[i]->setX(15+(5*i)-179);formacion[i]->setY(12);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i+1-40);		
 		}else{
 			formacion[i]->setX(15+(5*i)-220);formacion[i]->setY(10);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i+2-46);	
 		}
@@ -326,7 +326,8 @@ void oleada::posicionar_oleada(){
 }
 
 void oleada::dibujar_oleada(){
-	for(int i = 0; i < 44; i++){
+	int t = formacion.size();
+	for(int i = 0; i < t; i++){
 		formacion[i]->borrar();
 		formacion[i]->mover();
 	}
