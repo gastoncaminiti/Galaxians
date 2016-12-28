@@ -166,10 +166,12 @@ class enemigo: virtual public nave{
 	int dir;
 	int puntaje;
 	int posicion;
+	int fila;
 public:
 	void setDir(int _dir){dir=_dir;};
 	void setPosicion(int _posicion){posicion=_posicion;};
 	void setPuntaje(int _puntaje){puntaje=_puntaje;};
+	void setFila(int _fila){fila=_fila;};
 	void mover();	
 };
 
@@ -177,12 +179,12 @@ void enemigo::mover(){
 	switch(dir)
 	{
 	case IZQ:
-		if(x-(posicion*5)>4)x--;
-		if(x-(posicion*5)==4)dir=DER;
+		if(x-(posicion*5)>6)x--;
+		if(x-(posicion*5)==6)dir=DER;
 		break;
 	case DER:
-		if(x+(5*(10-posicion))<76)x++;
-		if(x+(5*(10-posicion))==76)dir=IZQ;
+		if(x+(5*(10-posicion))<70)x++;
+		if(x+(5*(10-posicion))==70)dir=IZQ;
 		break;
 	}
 	pintar();
@@ -244,49 +246,42 @@ int ultimoRefresco = clock(); // guardamos el tiempo actual
 
 class oleada: public enemigo_sargento,public enemigo_infanteria, public enemigo_teniente, public enemigo_general{
 	vector <enemigo*> formacion;
-	int map[10][6];
-	void cargar_enemigo(int tipo);
+	void cargar_enemigo(int tipo,int posicion,int fila);
 public:
 	oleada(int config_f1[2],int config_f2[2], int config_f3[2], int config_f4[2], int config_f5[2], int config_f6[2]);
-	void posicionar_oleada();
+	int resto_fila(int enemigos);
 	void dibujar_oleada();
+	
 };
 
 oleada::oleada(int config_f1[2],int config_f2[2], int config_f3[2], int config_f4[2], int config_f5[2], int config_f6[2]){
-	for(int i=config_f1[0];i!=0;i--){
-		map[i][1]=config_f1[1];
-		cargar_enemigo(config_f1[1]);
+	for(int i=1;i<=config_f1[0];i++){
+		cargar_enemigo(config_f1[1],i, 0);
 	}
 	
-	for(int i=config_f2[0];i!=0;i--){
-		map[i][2]=config_f2[1];
-		cargar_enemigo(config_f2[1]);
+	for(int i=1;i<=config_f2[0];i++){
+		cargar_enemigo(config_f2[1],i,1);
 	}
 	
-	for(int i=config_f3[0];i!=0;i--){
-		map[i][3]=config_f3[1];
-		cargar_enemigo(config_f3[1]);
+	for(int i=1;i<=config_f3[0];i++){
+		cargar_enemigo(config_f3[1],i,2);
 	}
 	
-	for(int i=config_f4[0];i!=0;i--){
-		map[i][4]=config_f4[1];
-		cargar_enemigo(config_f4[1]);
+	for(int i=1;i<=config_f4[0];i++){
+		cargar_enemigo(config_f4[1],i,3);
 	}
 	
-	
-	for(int i=config_f5[0];i!=0;i--){
-		map[i][5]=config_f5[1];
-		cargar_enemigo(config_f5[1]);
+	for(int i=1;i<=config_f5[0];i++){
+		cargar_enemigo(config_f5[1],i,4);
 	}
 
-	for(int i=config_f6[0];i!=0;i--){
-		map[i][6]=config_f6[1];
-		cargar_enemigo(config_f6[1]);
+	for(int i=1;i<=config_f6[0];i++){
+		cargar_enemigo(config_f6[1],i,5);
 	}
 	
 }
 
-void oleada::cargar_enemigo(int tipo){
+void oleada::cargar_enemigo(int tipo,int posicion,int fila){
 	switch(tipo)  
 	{  
 	case 2:  
@@ -300,29 +295,13 @@ void oleada::cargar_enemigo(int tipo){
 		break;  
 	default:  
 		formacion.push_back(new enemigo_infanteria());
-	}  
-}
-
-void oleada::posicionar_oleada(){
-	
-	int t = formacion.size();
-	for(int i = 0; i < t ; i++){
-		if(i<30){
-			if(i<10){			
-				formacion[i]->setX(15+(5*i));formacion[i]->setY(20);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i);
-			}else if(i<20){
-				formacion[i]->setX(15+(5*i)-50);formacion[i]->setY(18);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i-10);
-			}else{
-				formacion[i]->setX(15+(5*i)-100);formacion[i]->setY(16);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i-20);
-			}
-		}else if(i<38){
-			formacion[i]->setX(15+(5*i)-150);formacion[i]->setY(14);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i-30);
-		}else if(i<44){
-			formacion[i]->setX(15+(5*i)-179);formacion[i]->setY(12);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i+1-40);		
-		}else{
-			formacion[i]->setX(15+(5*i)-220);formacion[i]->setY(10);formacion[i]->setVida(1);formacion[i]->setDir(IZQ);formacion[i]->setPosicion(i+2-46);	
-		}
 	}
+	formacion.back()->setFila(fila);
+	formacion.back()->setY(20 - (2 * fila));
+	formacion.back()->setX(15 + (5* posicion));
+	formacion.back()->setDir(IZQ);
+	formacion.back()->setVida(1);
+	formacion.back()->setPosicion(posicion);
 }
 
 void oleada::dibujar_oleada(){
@@ -341,7 +320,7 @@ int main(int argc, char *argv[]) {
 	int fila_3[2] = {10,1};
 	int fila_4[2] = {8,2};
 	int fila_5[2] = {6,3};
-	int fila_6[2] = {2,4};
+	int fila_6[2] = {4,4};
 	
 	//Difinición de NIVEL
 	oleada *nivel1 = new oleada(fila_1,fila_2,fila_3,fila_4,fila_5,fila_6);
@@ -349,7 +328,7 @@ int main(int argc, char *argv[]) {
 	n1->pintar();
 	n1->pintar_vida();
 	
-	nivel1->posicionar_oleada();
+	//nivel1->posicionar_oleada();
 	
 	while(true){
 		ShowConsoleCursor(false);
