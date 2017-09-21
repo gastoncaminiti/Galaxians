@@ -5,6 +5,8 @@
 #include <vector>
 #include <time.h>
 #include <stdlib.h>
+#include <fstream>
+#include <sstream>
 
 #define DER 77
 #define IZQ 75
@@ -63,6 +65,69 @@ void text_info_gui(){
 	gotoxy(105,12);
 	cout<<"ENEMIGOS RESTANTES: "<<enemigos_total;
 }
+
+void grabar_puntaje(int p,string j){
+	ifstream tabla("tabla.txt");
+	string fila[6];
+	char cadena[128];
+	string aux;
+	int n_linea = 0;
+	int pos = 0;
+	while(!tabla.eof()){
+		tabla.getline(cadena,128);
+		aux = string(cadena);
+		pos = aux.find("-");
+		if( pos !=-1){
+			fila[n_linea] = string(cadena);
+			n_linea++;
+		}
+		
+	}
+	tabla.close();
+	ostringstream ss;
+	ss<<j<<" - "<<p;
+	//cout<<n_linea<<endl;
+	fila[n_linea]= ss.str();
+	int a,b;
+	for(int j=0;j < n_linea + 1;j++){
+		for(int j=0;j < n_linea;j++){
+			a=atoi(fila[j].substr(fila[j].find("-")+2,fila[j].length()).c_str());
+			b=atoi(fila[j+1].substr(fila[j+1].find("-")+2,fila[j+1].length()).c_str());
+			if (a > b){
+				aux = fila[j];
+				fila[j]=fila[j+1];
+				fila[j+1]=aux;
+			}
+		}
+	}
+	ofstream tabla2;
+	tabla2.open("tabla.txt");
+	for(int j=n_linea ;j > -1;j--){
+		if(n_linea < 5){
+			tabla2<<fila[j]<<endl;
+		}
+		else{
+			if(j>0)tabla2<<fila[j]<<endl;
+		}
+	}
+	tabla2.close();
+}
+
+void imprimir_tabla(){
+	ifstream tabla("tabla.txt");
+	char cadena[128];
+	int y=25;
+	while(!tabla.eof()){
+		tabla.getline(cadena,128);
+		gotoxy(110,y);
+		cout<<cadena<<endl;
+		y++;
+	}
+	gotoxy(112,23);
+	cout<<"MEJORES JUGADORES"<<endl;
+	tabla.close();
+}
+
 //CLASE BALA
 class bala{
 	int x,y;
@@ -117,7 +182,7 @@ public:
 	void setY(int _y){y=_y;};
 	void setVida(int _vida){vida=_vida;};
 	void pintar();
-	void virtual mover(char t);
+	virtual void mover(char t);
 	void borrar();
 	void pintar_vida();
 	void disparar();
@@ -217,8 +282,8 @@ public:
 	int getPosicion(){return posicion;};
 	void setFila(int _fila){fila=_fila;};
 	void mover();	
-	void /*virtual*/ img_a(){};
-    void /*virtual*/ img_b(){};
+	//virtual void img_a(){};
+	//virtual void img_b(){};
 };
 
 void enemigo::mover(){
@@ -513,7 +578,7 @@ int main(int argc, char *argv[]) {
 	n1->pintar();
 	n1->pintar_vida();
 	enemigos_total = nivel1->getNenemigos();
-	
+	string jugador;
 	while(true){
 		ShowConsoleCursor(false);
 		text_info_gui();
@@ -535,9 +600,9 @@ int main(int argc, char *argv[]) {
 			
 			//-----Pruba Unica-----------//
 			if(!flag_pick){
-				e_activo=nivel1->elegir_uno();
+				//e_activo=nivel1->elegir_uno();
 				if(e_activo != NULL){
-				    e_activo->img_b();
+				  //  e_activo->img_b();
 					flag_pick=true;
 				}
 			}else{
@@ -547,7 +612,18 @@ int main(int argc, char *argv[]) {
 				e_activo->pintar();
 			}
 			
-			nivel1->dibujar_oleada();
+			//-----CONDICION DE VICTORIA-----------//
+			//enemigos_total ==0
+			if(true){
+				gotoxy(30,10);
+				cout << "Tu nombre de jugador es: "<<endl;
+				gotoxy(55,10);
+				getline(cin,jugador);
+				grabar_puntaje(15100,jugador);
+				imprimir_tabla();
+			}else{
+				nivel1->dibujar_oleada();
+			}
 			ultimoRefresco = clock();
 		}
 		
