@@ -273,17 +273,21 @@ class enemigo: virtual public nave{
 	int puntaje;
 	int posicion;
 	int fila;
+	bool estado_v;
 public:
 	void setDir(int _dir){dir=_dir;};
 	void setPosicion(int _posicion){posicion=_posicion;};
 	void setPuntaje(int _puntaje){puntaje=_puntaje;};
+	void setEstado_v(bool _estado){estado_v=_estado;};
 	int getPuntaje(){return puntaje;};
 	int getFila(){return fila;};
 	int getPosicion(){return posicion;};
+	bool getEstado_v(){return estado_v;};
 	void setFila(int _fila){fila=_fila;};
 	void mover();	
-	//virtual void img_a(){};
-	//virtual void img_b(){};
+	virtual void img_a(){};
+	virtual void img_b(){};
+	void vuelo(int limite_a, int dir);
 };
 
 void enemigo::mover(){
@@ -303,12 +307,54 @@ void enemigo::mover(){
 	
 }
 
+void enemigo::vuelo(int limite,int dir){
+	borrar();
+	if(dir==0){
+		if(y>5 && x>limite && getEstado_v()){
+			y--;
+		}else if(y==5 && x>limite && getEstado_v()){
+			
+			x--;
+		}else if(y==5 && x==limite && getEstado_v()){
+			img_a();
+			y++;
+		}else{
+			if(y<31){
+				y++;
+				if(x<50)x+=2;
+			}
+			else{
+				x=10;
+				y=5;
+			}
+		}
+	}else{
+		if(y>5 && x<limite && getEstado_v()){
+			y--;
+		}else if(y==5 && x<limite && getEstado_v()){
+			x++;
+		}else if(y==5 && x==limite && getEstado_v()){
+			img_a();
+			y++;
+		}else{
+			if(y<31){
+				y++;
+				if(x>50)x-=2;
+			}
+			else{
+				x=90;
+				y=5;
+			}
+		}
+	}
+}
+
 //ENEMIGO 1
 class enemigo_infanteria: virtual public enemigo{
 public:
 	enemigo_infanteria();
-	void img_a();
-	void img_b();
+	void img_a();  
+	void img_b(); 
 };
 
 enemigo_infanteria::enemigo_infanteria(){
@@ -316,14 +362,17 @@ enemigo_infanteria::enemigo_infanteria(){
 	img[0][0]=207;img[0][1]=205;img[0][2]=202;img[0][3]=205;img[0][4]=207;
 	img[1][0]=0;img[1][1]=0;img[1][2]=0;img[1][3]=0;img[1][4]=0;
 	color=4;
+	setEstado_v(false);
 }
 
  void enemigo_infanteria::img_a(){
-	img[0][2]=202;
+	img[0][2]=203;
+	setEstado_v(false);
 }
 
 void enemigo_infanteria::img_b(){
-	img[0][2]=203;
+	img[0][2]=202;
+	setEstado_v(true);
 }
 
 
@@ -343,11 +392,13 @@ enemigo_sargento::enemigo_sargento(){
 void enemigo_sargento::img_a(){
 	img[0][0]=204;img[0][1]=205;img[0][2]=207;img[0][3]=205;img[0][4]=185;
 	img[1][0]=0;img[1][1]=0;img[1][2]=202;img[1][3]=0;img[1][4]=0;
+	setEstado_v(false);
 }
 
 void enemigo_sargento::img_b(){
 	img[0][0]=0;img[0][1]=0;img[0][2]=203;img[0][3]=0;img[0][4]=0;
 	img[1][0]=204;img[1][1]=205;img[1][2]=207;img[1][3]=205;img[1][4]=185;
+	setEstado_v(true);
 	
 }
 
@@ -367,12 +418,13 @@ enemigo_teniente::enemigo_teniente(){
 void enemigo_teniente::img_a(){
 	img[0][0]=201;img[0][1]=205;img[0][2]=207;img[0][3]=205;img[0][4]=187;
 	img[1][0]=202;img[1][1]=0;img[1][2]=0;img[1][3]=0;img[1][4]=202;
+	setEstado_v(false);
 }
 
 void enemigo_teniente::img_b(){
 	img[0][0]=203;img[0][1]=0;img[0][2]=0;img[0][3]=0;img[0][4]=203;
 	img[1][0]=200;img[1][1]=205;img[1][2]=207;img[1][3]=205;img[1][4]=188;
-	
+	setEstado_v(true);
 }
 
 //ENEMIGO 4
@@ -391,10 +443,12 @@ enemigo_general::enemigo_general(){
 void enemigo_general::img_a(){
 	img[0][0]=201;img[0][1]=205;img[0][2]=207;img[0][3]=205;img[0][4]=187;
 	img[1][0]=200;img[1][1]=205;img[1][2]=206;img[1][3]=205;img[1][4]=188;
+	setEstado_v(false);
 }
 
 void enemigo_general::img_b(){
 	img[1][2]=207;img[0][2]=206;
+	setEstado_v(true);
 }
 
 
@@ -404,7 +458,7 @@ int ultimoRefresco = clock(); // guardamos el tiempo actual
 
 //FORMACION
 
-class oleada: public enemigo_sargento,public enemigo_infanteria, public enemigo_teniente, public enemigo_general{
+class oleada{
 	vector <enemigo*> formacion;
 	void cargar_enemigo(int tipo,int posicion,int fila);
 	int n_enemigos;
@@ -565,7 +619,7 @@ int main(int argc, char *argv[]) {
 	nave *n1 = new nave();
 	enemigo *e_activo = NULL;
 	//Difinición de NIVEL
-	int fila_1[2] = {2,1}; 
+	int fila_1[2] = {10,1}; 
 	int fila_2[2] = {10,1};
 	int fila_3[2] = {10,1};
 	int fila_4[2] = {8,2};
@@ -600,26 +654,24 @@ int main(int argc, char *argv[]) {
 			
 			//-----Pruba Unica-----------//
 			if(!flag_pick){
-				//e_activo=nivel1->elegir_uno();
+				e_activo=nivel1->elegir_uno();
 				if(e_activo != NULL){
-				  //  e_activo->img_b();
+				    e_activo->img_b();
 					flag_pick=true;
 				}
 			}else{
-				gotoxy(105,20);
-				cout<<"SSSS"<<endl;
-				
+				if(e_activo->getX()<50)e_activo->vuelo(LIMITE_IZQ_OLEADA,0);
+				else e_activo->vuelo(LIMITE_DER_OLEADA,1);
 				e_activo->pintar();
 			}
 			
 			//-----CONDICION DE VICTORIA-----------//
-			//enemigos_total ==0
-			if(true){
+			if(enemigos_total ==0){
 				gotoxy(30,10);
 				cout << "Tu nombre de jugador es: "<<endl;
 				gotoxy(55,10);
 				getline(cin,jugador);
-				grabar_puntaje(15100,jugador);
+				grabar_puntaje(puntaje_total,jugador);
 				imprimir_tabla();
 			}else{
 				nivel1->dibujar_oleada();
