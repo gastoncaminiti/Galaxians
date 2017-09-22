@@ -178,6 +178,7 @@ public:
 	int getY(){return y;};
 	int getX_B(){return disparo->getX();};
 	int getY_B(){return disparo->getY();};
+	int getVida(){return vida;};
 	void setX(int _x){x=_x;};
 	void setY(int _y){y=_y;};
 	void setVida(int _vida){vida=_vida;};
@@ -190,6 +191,7 @@ public:
 	void eliminar_disparo();
 	bool bala_activa(){return b_activa;};
 	bool colision_nave(int _x, int _y);
+	void restar_v(){vida--;};
 };
 
 
@@ -233,6 +235,7 @@ void nave::mover(char t){
 }
 
 void nave::pintar_vida(){
+	textcolor(10);
 	gotoxy(110,4); printf("VIDAS");
 	for(int i=0;i< vida; i++){
 		gotoxy(120+i,4);
@@ -259,7 +262,7 @@ void nave::mover_disparo(){
 
 void nave::eliminar_disparo(){
 	disparo->eliminar();
-	//delete disparo;
+	delete disparo;
 	b_activa = false;
 }
 
@@ -321,7 +324,7 @@ void enemigo::vuelo(int limite,int dir){
 		}else{
 			if(y<31){
 				y++;
-				if(x<50)x+=2;
+				if(x<50)x++;
 			}
 			else{
 				x=10;
@@ -339,7 +342,7 @@ void enemigo::vuelo(int limite,int dir){
 		}else{
 			if(y<31){
 				y++;
-				if(x>50)x-=2;
+				if(x>50)x--;
 			}
 			else{
 				x=90;
@@ -471,6 +474,7 @@ public:
 	bool colision_oleada(int _x, int _y);
 	enemigo* elegir_uno();
 	void borrar(int i);
+	void restar_e(){n_enemigos--;};
 };
 
 oleada::oleada(int config_f1[2],int config_f2[2], int config_f3[2], int config_f4[2], int config_f5[2], int config_f6[2]){
@@ -563,7 +567,6 @@ bool oleada::colision_oleada(int _x, int _y){
 				puntaje_total+=formacion[i]->getPuntaje();
 				borrar(i);
 				n_enemigos--;
-				enemigos_total = n_enemigos;
 				return true;
 			}
 		}
@@ -631,8 +634,8 @@ int main(int argc, char *argv[]) {
 	n1->setX(38);n1->setY(30);n1->setVida(3);
 	n1->pintar();
 	n1->pintar_vida();
-	enemigos_total = nivel1->getNenemigos();
 	string jugador;
+	enemigos_total = nivel1->getNenemigos();
 	while(true){
 		ShowConsoleCursor(false);
 		text_info_gui();
@@ -647,12 +650,36 @@ int main(int argc, char *argv[]) {
 		}
 		if(clock() > ultimoRefresco + periodoRefresco)
 		{
+			//Colision Bala-Enemigo
 			if(n1->bala_activa()){
 				n1->mover_disparo();
-				if(nivel1->colision_oleada(n1->getX_B(),n1->getY_B()))n1->eliminar_disparo();
+				if(nivel1->colision_oleada(n1->getX_B(),n1->getY_B())){
+					n1->eliminar_disparo();
+					enemigos_total = nivel1->getNenemigos();
+				}
+				if(e_activo != NULL){
+					if(e_activo->colision_nave(n1->getX_B(),n1->getY_B())){
+						n1->eliminar_disparo();
+						e_activo->borrar();
+						e_activo = NULL;
+						nivel1->restar_e();
+						flag_pick=false;
+						enemigos_total = nivel1->getNenemigos();
+					}
+				}
 			}
-			
-			//-----Pruba Unica-----------//
+			//Colision Enemigo-Jugador
+			if(e_activo != NULL){
+				if(e_activo->colision_nave(n1->getX(),n1->getY())){
+					n1->borrar();
+					if(n1->getVida()>0){
+						n1->borrar();
+						n1->restar_v();
+						n1->pintar_vida();
+					}
+				}
+			}
+			//-----SELECCION DE ENEMIGO A VOLAR Y VUELO-----------//
 			if(!flag_pick){
 				e_activo=nivel1->elegir_uno();
 				if(e_activo != NULL){
@@ -664,9 +691,9 @@ int main(int argc, char *argv[]) {
 				else e_activo->vuelo(LIMITE_DER_OLEADA,1);
 				e_activo->pintar();
 			}
-			
-			//-----CONDICION DE VICTORIA-----------//
-			if(enemigos_total ==0){
+			//-----CONDICION DE DERROTA-----------//
+			if(n1->getVida()==0){
+				gotoxy(110,4); printf("-----GAME OVER-----");
 				gotoxy(30,10);
 				cout << "Tu nombre de jugador es: "<<endl;
 				gotoxy(55,10);
@@ -675,6 +702,14 @@ int main(int argc, char *argv[]) {
 				imprimir_tabla();
 			}else{
 				nivel1->dibujar_oleada();
+				n1->pintar();
+			}
+			//-----CONDICION DE REINICIO DE OLEADA-----------//
+			if(enemigos_total == 0){
+				delete nivel1;
+				nivel1= NULL;
+				nivel1 = new oleada(fila_1,fila_2,fila_3,fila_4,fila_5,fila_6);
+				enemigos_total = nivel1->getNenemigos();
 			}
 			ultimoRefresco = clock();
 		}
