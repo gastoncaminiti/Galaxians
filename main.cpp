@@ -12,7 +12,7 @@
 #define IZQ 75
 
 #define LIMITE_IZQ_OLEADA 6
-#define LIMITE_DER_OLEADA 90
+#define LIMITE_DER_OLEADA 84
 #define ALTURA_OLEADA 20
 
 #define ALTURA_NAVE 2
@@ -20,7 +20,7 @@
 
 #define MAX_MAP_FILA 6
 #define MAX_MAP_COLUM 10 
-
+#define MAX_EN_ATAQUE 3
 
 using namespace std;
 
@@ -136,22 +136,27 @@ public:
 	void setY(int _y){y=_y;};
 	int getX(){return x;};
 	int getY(){return y;};
-	void mover();
-	bool limite();
+	void mover(int dir);
+	bool limite(int limite);
 	void eliminar();
 };
 
-void bala::mover(){
+void bala::mover(int dir){
 	textcolor(15);
 	gotoxy(x,y);
 	printf(" ");
-	if(y>4)y--;
+	if(dir==0){
+		if(y>4)y--;
+	}
+	else{
+		if(y<31)y++;
+	}
 	gotoxy(x,y);
-	printf("%c",248);
+	printf("%c",207);
 }
 
-bool bala::limite(){
-	if(y==4)
+bool bala::limite(int limite){
+	if(y==limite)
 	   return true;
 	return false;
 }
@@ -228,7 +233,7 @@ void nave::mover(char t){
 		if(x>3)x--;
 		break;
 	case DER:
-		if(x+6<77)x++;
+		if(x+6<100)x++;
 		break;
 	}
 	pintar();
@@ -248,14 +253,14 @@ void nave::disparar(){
 	if(!b_activa){	
 		disparo = new bala();
 		disparo->setX(x+2);
-		disparo->setY(y-1);
+		disparo->setY(y-2);
 		b_activa = true;
 	}
 }
 
 void nave::mover_disparo(){
 	if(b_activa){
-		if(!disparo->limite()) disparo->mover();
+		if(!disparo->limite(4)) disparo->mover(0);
 		else eliminar_disparo();
 	}
 }
@@ -290,7 +295,11 @@ public:
 	void mover();	
 	virtual void img_a(){};
 	virtual void img_b(){};
+	virtual int tipo(){return 0;};
+	void disparar();
+	void mover_disparo();
 	void vuelo(int limite_a, int dir);
+	void duplicar_p(){puntaje=puntaje*2;};
 };
 
 void enemigo::mover(){
@@ -312,6 +321,7 @@ void enemigo::mover(){
 
 void enemigo::vuelo(int limite,int dir){
 	borrar();
+	int r_shoot = rand() % 10;
 	if(dir==0){
 		if(y>5 && x>limite && getEstado_v()){
 			y--;
@@ -324,6 +334,7 @@ void enemigo::vuelo(int limite,int dir){
 		}else{
 			if(y<31){
 				y++;
+				if(r_shoot+y==y )disparar();
 				if(x<50)x++;
 			}
 			else{
@@ -331,6 +342,7 @@ void enemigo::vuelo(int limite,int dir){
 				y=5;
 			}
 		}
+		
 	}else{
 		if(y>5 && x<limite && getEstado_v()){
 			y--;
@@ -338,10 +350,12 @@ void enemigo::vuelo(int limite,int dir){
 			x++;
 		}else if(y==5 && x==limite && getEstado_v()){
 			img_a();
+			disparar();
 			y++;
 		}else{
 			if(y<31){
 				y++;
+				if(r_shoot+y==y )disparar();
 				if(x>50)x--;
 			}
 			else{
@@ -352,12 +366,29 @@ void enemigo::vuelo(int limite,int dir){
 	}
 }
 
+void enemigo::disparar(){
+	if(!b_activa){	
+		disparo = new bala();
+		disparo->setX(x+2);
+		disparo->setY(y+2);
+		b_activa = true;
+	}
+}
+
+void enemigo::mover_disparo(){
+	if(b_activa){
+		if(!disparo->limite(30)) disparo->mover(1);
+		else eliminar_disparo();
+	}
+}
+
 //ENEMIGO 1
 class enemigo_infanteria: virtual public enemigo{
 public:
 	enemigo_infanteria();
 	void img_a();  
 	void img_b(); 
+	int tipo(){return 1;};
 };
 
 enemigo_infanteria::enemigo_infanteria(){
@@ -385,6 +416,7 @@ public:
 	enemigo_sargento();
 	void img_a();
 	void img_b();
+	virtual int tipo(){return 2;};
 };
 
 enemigo_sargento::enemigo_sargento(){
@@ -411,6 +443,7 @@ public:
 	enemigo_teniente();
 	void img_a();
 	void img_b();
+	virtual int tipo(){return 3;};
 };
 
 enemigo_teniente::enemigo_teniente(){
@@ -436,6 +469,7 @@ public:
 	enemigo_general();
 	void img_a();
 	void img_b();
+	virtual int tipo(){return 4;};
 };
 
 enemigo_general::enemigo_general(){
@@ -470,43 +504,53 @@ class oleada{
 public:
 	oleada(int config_f1[2],int config_f2[2], int config_f3[2], int config_f4[2], int config_f5[2], int config_f6[2]);
 	void dibujar_oleada();
+	void borrar_oleada();
 	int getNenemigos(){return n_enemigos;};
 	bool colision_oleada(int _x, int _y);
 	enemigo* elegir_uno();
+	enemigo* elegir(int fila,int posicion);
 	void borrar(int i);
 	void restar_e(){n_enemigos--;};
 };
 
 oleada::oleada(int config_f1[2],int config_f2[2], int config_f3[2], int config_f4[2], int config_f5[2], int config_f6[2]){
 	n_enemigos = 0;
+	int aux_pos = 0;
 	map_clean();
+	
+	if(config_f1[0]!= MAX_MAP_COLUM) aux_pos = (MAX_MAP_COLUM - config_f1[0])/ 2;
 	for(int i=1;i<=config_f1[0];i++){
-		cargar_enemigo(config_f1[1],i, 0);
+		cargar_enemigo(config_f1[1],i+aux_pos, 0);
 		n_enemigos++;
 	}
 	
+	if(config_f2[0]!= MAX_MAP_COLUM) aux_pos = (MAX_MAP_COLUM - config_f2[0])/ 2;
 	for(int i=1;i<=config_f2[0];i++){
-		cargar_enemigo(config_f2[1],i,1);
+		cargar_enemigo(config_f2[1],i+aux_pos,1);
 		n_enemigos++;
 	}
 	
+	if(config_f3[0]!= MAX_MAP_COLUM) aux_pos = (MAX_MAP_COLUM - config_f3[0])/ 2;
 	for(int i=1;i<=config_f3[0];i++){
-		cargar_enemigo(config_f3[1],i,2);
+		cargar_enemigo(config_f3[1],i+aux_pos,2);
 		n_enemigos++;
 	}
 	
+	if(config_f4[0]!= MAX_MAP_COLUM) aux_pos = (MAX_MAP_COLUM - config_f4[0])/ 2;
 	for(int i=1;i<=config_f4[0];i++){
-		cargar_enemigo(config_f4[1],i,3);
+		cargar_enemigo(config_f4[1],i+aux_pos,3);
 		n_enemigos++;
 	}
 	
+	if(config_f5[0]!= MAX_MAP_COLUM) aux_pos = (MAX_MAP_COLUM - config_f5[0])/ 2;
 	for(int i=1;i<=config_f5[0];i++){
-		cargar_enemigo(config_f5[1],i,4);
+		cargar_enemigo(config_f5[1],i+aux_pos,4);
 		n_enemigos++;
 	}
-
+	
+	if(config_f6[0]!= MAX_MAP_COLUM) aux_pos = (MAX_MAP_COLUM - config_f6[0])/ 2;
 	for(int i=1;i<=config_f6[0];i++){
-		cargar_enemigo(config_f6[1],i,5);
+		cargar_enemigo(config_f6[1],i+aux_pos,5);
 		n_enemigos++;
 	}
 	
@@ -552,6 +596,14 @@ void oleada::dibujar_oleada(){
 	}
 }
 
+void oleada::borrar_oleada(){
+	int t = formacion.size();
+	for(int i = 0; i < t; i++){
+		if(formacion[i]!= NULL){
+			formacion[i]->borrar();
+		}
+	}
+}
 
 void oleada::borrar(int i){
 	formacion[i]->borrar();
@@ -577,21 +629,19 @@ bool oleada::colision_oleada(int _x, int _y){
 enemigo* oleada::elegir_uno(){
 	int t = formacion.size();
 	int fila_r = rand() % 6; 
-	gotoxy(105,25);
-	cout<<fila_r<<endl;
+	//gotoxy(105,25);
+	//cout<<fila_r<<endl;
 	enemigo* aux = NULL;
 	for(int i = 0; i < t; i++){
 		if(formacion[i]!= NULL){
 			if(formacion[i]->getFila() == fila_r){
 				if (fila_r < MAX_MAP_FILA -1){
-					gotoxy(105,30);
-					cout<<map_control[formacion[i]->getPosicion()][formacion[i]->getFila()+1]<<endl;
-					if(formacion[i]->getPosicion() == 0 && map_control[formacion[i]->getPosicion()][formacion[i]->getFila()+1] ==0){
+					if(formacion[i]->getPosicion() == 0 && map_control[formacion[i]->getFila()+1][formacion[i]->getPosicion()] ==0){
 						aux = formacion[i];
 						borrar(i);
 						return aux;
 					}
-					if(formacion[i]->getPosicion() != 0 && map_control[formacion[i]->getPosicion()][formacion[i]->getFila()+1] ==0 && map_control[formacion[i]->getPosicion()-1][formacion[i]->getFila()] ==0){
+					if(formacion[i]->getPosicion() != 0 && map_control[formacion[i]->getFila()+1][formacion[i]->getPosicion()] ==0 && map_control[formacion[i]->getFila()][formacion[i]->getPosicion()-1] ==0){
 						aux = formacion[i];
 						borrar(i);
 						return aux;
@@ -607,6 +657,23 @@ enemigo* oleada::elegir_uno(){
 	return aux;
 }
 
+
+enemigo* oleada::elegir(int fila,int posicion){
+	int t = formacion.size();
+	enemigo* aux = NULL;
+	for(int i = 0; i < t; i++){
+		if(formacion[i]!= NULL){
+			if(formacion[i]->getFila() == fila && formacion[i]->getPosicion() == posicion){
+				aux = formacion[i];
+				borrar(i);
+				return aux;
+			}
+		}
+	}
+	return aux;
+}
+
+
 void oleada::map_clean(){
 	for(int i=0;i<MAX_MAP_COLUM;i++){
 		for(int j=0;j<MAX_MAP_FILA;j++){
@@ -620,14 +687,14 @@ int main(int argc, char *argv[]) {
 	system("mode 140, 35");
 	srand (time(NULL));
 	nave *n1 = new nave();
-	enemigo *e_activo = NULL;
+	enemigo *e_activos[MAX_EN_ATAQUE] = {NULL,NULL,NULL};
 	//Difinición de NIVEL
 	int fila_1[2] = {10,1}; 
 	int fila_2[2] = {10,1};
 	int fila_3[2] = {10,1};
 	int fila_4[2] = {8,2};
 	int fila_5[2] = {6,3};
-	int fila_6[2] = {4,4};
+	int fila_6[2] = {2,4};
 	//Difinición de NIVEL
 	oleada *nivel1 = new oleada(fila_1,fila_2,fila_3,fila_4,fila_5,fila_6);
 	pintar_gui();
@@ -650,27 +717,43 @@ int main(int argc, char *argv[]) {
 		}
 		if(clock() > ultimoRefresco + periodoRefresco)
 		{
-			//Colision Bala-Enemigo
+			//Colision Bala_J-Enemigo
 			if(n1->bala_activa()){
-				n1->mover_disparo();
 				if(nivel1->colision_oleada(n1->getX_B(),n1->getY_B())){
 					n1->eliminar_disparo();
 					enemigos_total = nivel1->getNenemigos();
 				}
-				if(e_activo != NULL){
-					if(e_activo->colision_nave(n1->getX_B(),n1->getY_B())){
-						n1->eliminar_disparo();
-						e_activo->borrar();
-						e_activo = NULL;
-						nivel1->restar_e();
-						flag_pick=false;
-						enemigos_total = nivel1->getNenemigos();
+				for(int i = 0; i < MAX_EN_ATAQUE; i++){
+					if(e_activos[i]!= NULL){
+						if(e_activos[i]->colision_nave(n1->getX_B(),n1->getY_B())){
+							n1->eliminar_disparo();
+							e_activos[i]->borrar();
+							if(e_activos[i]->bala_activa())e_activos[i]->eliminar_disparo();
+							puntaje_total+=e_activos[i]->getPuntaje();
+							e_activos[i] = NULL;
+							nivel1->restar_e();
+							enemigos_total = nivel1->getNenemigos();
+						}
+					}
+				}
+			}
+			//Colision Bala_E-Jugador
+			for(int i = 0; i < MAX_EN_ATAQUE; i++){
+				if(e_activos[i]!= NULL){
+					if(e_activos[i]->bala_activa()){
+						if(n1->colision_nave(e_activos[i]->getX_B(),e_activos[i]->getY_B())){
+							e_activos[i]->eliminar_disparo();
+							n1->borrar();
+							n1->restar_v();
+							n1->pintar_vida();
+						}
 					}
 				}
 			}
 			//Colision Enemigo-Jugador
-			if(e_activo != NULL){
-				if(e_activo->colision_nave(n1->getX(),n1->getY())){
+			for(int i = 0; i < MAX_EN_ATAQUE; i++){
+			 if(e_activos[i]!= NULL){
+				if(e_activos[i]->colision_nave(n1->getX(),n1->getY())){
 					n1->borrar();
 					if(n1->getVida()>0){
 						n1->borrar();
@@ -678,22 +761,40 @@ int main(int argc, char *argv[]) {
 						n1->pintar_vida();
 					}
 				}
+			 }
 			}
 			//-----SELECCION DE ENEMIGO A VOLAR Y VUELO-----------//
 			if(!flag_pick){
-				e_activo=nivel1->elegir_uno();
-				if(e_activo != NULL){
-				    e_activo->img_b();
+				e_activos[0]=nivel1->elegir_uno();
+				if(e_activos[0] != NULL){
+					if(e_activos[0]->tipo() == 4){
+						e_activos[1] = nivel1->elegir(e_activos[0]->getFila()-1,e_activos[0]->getPosicion());
+						e_activos[2] = nivel1->elegir(e_activos[0]->getFila()-1,e_activos[0]->getPosicion()-1);
+					}
+					for(int i = 0; i < MAX_EN_ATAQUE; i++){
+						if(e_activos[i]!= NULL){
+							e_activos[i]->img_b();
+							e_activos[i]->duplicar_p();
+						}
+					}
 					flag_pick=true;
 				}
 			}else{
-				if(e_activo->getX()<50)e_activo->vuelo(LIMITE_IZQ_OLEADA,0);
-				else e_activo->vuelo(LIMITE_DER_OLEADA,1);
-				e_activo->pintar();
+				for(int i = 0; i < MAX_EN_ATAQUE; i++){
+					if(e_activos[i]!= NULL){
+						if(e_activos[i]->getX()<50)e_activos[i]->vuelo(LIMITE_IZQ_OLEADA,0);
+						else e_activos[i]->vuelo(LIMITE_DER_OLEADA,1);
+						e_activos[i]->pintar();
+						if(e_activos[i]->bala_activa())e_activos[i]->mover_disparo();
+					}
+				}
 			}
+			if(e_activos[0]== NULL && e_activos[1] == NULL && e_activos[2] == NULL)flag_pick=false;
+			if(n1->bala_activa())n1->mover_disparo();
 			//-----CONDICION DE DERROTA-----------//
 			if(n1->getVida()==0){
 				gotoxy(110,4); printf("-----GAME OVER-----");
+				nivel1->borrar_oleada();
 				gotoxy(30,10);
 				cout << "Tu nombre de jugador es: "<<endl;
 				gotoxy(55,10);
